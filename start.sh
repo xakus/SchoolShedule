@@ -42,17 +42,23 @@ DOCKER_DIR="$SCRIPT_DIR/docker_files"
 DOCKER_COMPOSE_FILE="$DOCKER_DIR/docker-compose.yml"
 
 cd "$DOCKER_DIR"
-if [ -f "$DOCKER_COMPOSE_FILE" ]; then
-    echo "Проверка статуса docker-compose..."
-    if ! docker-compose ps | grep -q postgres; then
-        echo "Запуск docker-compose сервисов..."
-        docker-compose up -d
-    else
-        echo "Docker Compose сервисы уже запущены."
-    fi
-else
+if [ ! -f "$DOCKER_COMPOSE_FILE" ]; then
     echo "Файл docker-compose.yml не найден!"
     exit 1
+fi
+
+# Запускаем или создаём контейнеры
+echo "Проверка состояния контейнеров docker-compose..."
+if docker ps | grep -q "$CONTAINER_NAME"; then
+    echo "Контейнер $CONTAINER_NAME запущен."
+else
+    if docker ps -a | grep -q "$CONTAINER_NAME"; then
+        echo "Запускаем существующие контейнеры postgres и redis-stack..."
+        docker start "$CONTAINER_NAME" "redis-stack"
+    else
+        echo "Создаём и запускаем сервисы через docker-compose..."
+        docker-compose up -d
+    fi
 fi
 
 if ! command -v dotnet &> /dev/null; then
