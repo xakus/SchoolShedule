@@ -69,6 +69,10 @@ if ! command -v dotnet &> /dev/null; then
     sudo apt install -y dotnet-sdk-8.0
 fi
 
+# Останавливаем предыдущие .NET-сервисы
+echo "Останавливаем предыдущие .NET-сервисы..."
+pkill -f "dotnet run --configuration Release" || true
+
 for service in UserService SchoolService GenerationService; do
     SERVICE_DIR="$SCRIPT_DIR/$service"
     cd "$SERVICE_DIR"
@@ -79,6 +83,12 @@ for service in UserService SchoolService GenerationService; do
     echo "Запускаю $service..."
     nohup dotnet run --configuration Release > "$service.log" 2>&1 &
 done
+
+# Добавляем автозапуск скрипта при перезагрузке
+if ! crontab -l | grep -Fq "@reboot $SCRIPT_DIR/start.sh"; then
+    (crontab -l 2>/dev/null; echo "@reboot $SCRIPT_DIR/start.sh") | crontab -
+    echo "Добавлена задача @reboot для $SCRIPT_DIR/start.sh"
+fi
 
 # === ИНИЦИАЛИЗАЦИЯ БАЗЫ SCHOOL_DB В КОНТЕЙНЕРЕ DOCKER ===
 
