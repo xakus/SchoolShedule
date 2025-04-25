@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: school_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 52@@MS1988!!
+      POSTGRES_PASSWORD: DBPASSWORD
     ports:
       - "5443:5432"
     volumes:
@@ -17,36 +17,12 @@ services:
     container_name: redis-stack
     restart: always
     environment:
-      REDIS_PASSWORD: "25@@Mur!988>>"
+      REDIS_PASSWORD: REDISPASSWORD
     volumes:
       - redis_volume_data:/data
     ports:
       - 6379:6379
       - 9911:8001
-  rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitMQ
-    restart: always
-    environment:
-      RABBITMQ_DEFAULT_USER:  message
-      RABBITMQ_DEFAULT_PASS:  "25@@Rebbit!988>>"
-    ports:
-      - "5882:5672"
-      - "15882:15672"
-#  minio:
-#    image: minio/minio:RELEASE.2024-02-09T21-25-16Z
-#    command: server /data --console-address ":9001"
-#    restart: always
-#    ports:
-#      - "9900:9000"
-#      - "9001:9001"
-#    environment:
-#      MINIO_ROOT_USER: "file_admin"
-#      MINIO_ROOT_PASSWORD: "<<8825@@Rebbit!988>>"
-#    volumes:
-#      - minio_data:/data
 volumes:
   pgdata:
   redis_volume_data:
-  redis_insight_volume_data:
-#  minio_data:

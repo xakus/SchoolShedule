@@ -86,7 +86,6 @@ done
 
 
 SQLFILE="$DOCKER_DIR/postgres_init/start.sql"
-SQLFILE="$SCRIPT_DIR/docker_files/postgres_init/start.sql"
 
 # Проверить, запущен ли контейнер
 if docker ps | grep -q "$CONTAINER_NAME"; then
