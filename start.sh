@@ -23,8 +23,8 @@ if ! command -v docker &> /dev/null; then
     echo "Устанавливаю Docker..."
     sudo apt update
     sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-    curl -fsSL [https://download.docker.com/linux/ubuntu/gpg](https://download.docker.com/linux/ubuntu/gpg) | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] [https://download.docker.com/linux/ubuntu](https://download.docker.com/linux/ubuntu) $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt update
     sudo apt install -y docker-ce
     sudo usermod -aG docker $LINUX_USER
@@ -37,14 +37,7 @@ if ! command -v docker-compose &> /dev/null; then
     sudo apt install -y docker-compose
 fi
 
-echo "Проверка наличия Git..."
-if ! command -v git &> /dev/null; then
-    echo "Устанавливаю Git..."
-    sudo apt update
-    sudo apt install -y git
-fi
-
-SCRIPT_DIR="$(cd "$(dirname \"${BASH_SOURCE[0]}\")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCKER_DIR="$SCRIPT_DIR/docker_files"
 DOCKER_COMPOSE_FILE="$DOCKER_DIR/docker-compose.yml"
 
@@ -64,7 +57,7 @@ fi
 
 if ! command -v dotnet &> /dev/null; then
     echo "Устанавливаю .NET SDK..."
-    wget [https://packages.microsoft.com/config/ubuntu/$(lsb_release](https://packages.microsoft.com/config/ubuntu/$(lsb_release) -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+    wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
     sudo dpkg -i packages-microsoft-prod.deb
     sudo apt update
     sudo apt install -y dotnet-sdk-8.0
