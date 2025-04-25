@@ -1,0 +1,9 @@
+# Исключить временные и сборочные файлы .NET
+bin/
+obj/
+*.log
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vs/

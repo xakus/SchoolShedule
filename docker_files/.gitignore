@@ -1,0 +1,15 @@
+# Исключить данные Postgres и временные файлы
+postgres_init/*.bak
+postgres_init/*.tmp
+postgres_init/*.old
+postgres_init/*.orig
+*.log
+*.tmp
+*.bak
+*.sqlite3
+*.db
+*.swp
+*.swo
+
+# Не исключаем start.sql!
+!postgres_init/start.sql
