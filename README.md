@@ -36,6 +36,11 @@ chmod +x start.sh
 - UserService: `http://localhost:5000/swagger/index.html`
 - SchoolService: `http://localhost:5002/swagger/index.html`
 - GenerationService: `http://localhost:5004/swagger/index.html`
+- 
+Тестовый сервер:
+- UserService: `http://5.181.187.67:5000/swagger/index.html`
+- SchoolService: `http://5.181.187.67:5002/swagger/index.html`
+- GenerationService: `http://5.181.187.67:5004/swagger/index.html`
 
 ## Переменные окружения
 
