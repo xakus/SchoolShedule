@@ -43,3 +43,7 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 yarn.lock
+GenerationService/appsettings.json
+SchoolService/appsettings.json
+UserService/appsettings.json
+docker_files/packages-microsoft-prod.deb
