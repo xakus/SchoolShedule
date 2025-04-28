@@ -86,6 +86,7 @@ namespace SchoolService.Services
             var school = await _db.Schools.FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId);
             if (school == null) return false;
             school.Active = false;
+            school.CreateDateTime = DateTime.SpecifyKind(school.CreateDateTime, DateTimeKind.Utc);
             _db.Schools.Update(school);
             await _db.SaveChangesAsync();
             string key = $"school:{id}";
@@ -138,5 +139,6 @@ namespace SchoolService.Services
             await _redis.StringSetAsync(key, JsonSerializer.Serialize(dto));
             return dto;
         }
+
     }
 }
