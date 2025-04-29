@@ -25,7 +25,7 @@ SET default_table_access_method = heap;
 -- Name: Users; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public."Users" (
+CREATE TABLE IF NOT EXISTS public."Users" (
     "Id" integer NOT NULL,
     "Email" character varying(255) NOT NULL,
     "PasswordHash" character varying(255) NOT NULL,
@@ -39,7 +39,7 @@ ALTER TABLE public."Users" OWNER TO postgres;
 -- Name: Users_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public."Users_Id_seq"
+CREATE SEQUENCE IF NOT EXISTS public."Users_Id_seq"
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -61,7 +61,7 @@ ALTER SEQUENCE public."Users_Id_seq" OWNED BY public."Users"."Id";
 -- Name: class_lessons; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.class_lessons (
+CREATE TABLE IF NOT EXISTS public.class_lessons (
     id integer NOT NULL,
     class_t_id integer NOT NULL,
     subject_t_id integer NOT NULL,
@@ -75,7 +75,7 @@ ALTER TABLE public.class_lessons OWNER TO postgres;
 -- Name: class_lessonse_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.class_lessonse_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.class_lessonse_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -97,7 +97,7 @@ ALTER SEQUENCE public.class_lessonse_id_seq OWNED BY public.class_lessons.id;
 -- Name: class_t; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.class_t (
+CREATE TABLE IF NOT EXISTS public.class_t (
     id integer NOT NULL,
     name character varying(255) NOT NULL,
     school_t_id integer NOT NULL,
@@ -113,7 +113,7 @@ ALTER TABLE public.class_t OWNER TO postgres;
 -- Name: class_t_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.class_t_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.class_t_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -135,7 +135,7 @@ ALTER SEQUENCE public.class_t_id_seq OWNED BY public.class_t.id;
 -- Name: schedule; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.schedule (
+CREATE TABLE IF NOT EXISTS public.schedule (
     id integer NOT NULL,
     calss_id integer NOT NULL,
     teacher_id integer NOT NULL,
@@ -154,7 +154,7 @@ ALTER TABLE public.schedule OWNER TO postgres;
 -- Name: schedule_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.schedule_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.schedule_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -176,7 +176,7 @@ ALTER SEQUENCE public.schedule_id_seq OWNED BY public.schedule.id;
 -- Name: schedule_version; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.schedule_version (
+CREATE TABLE IF NOT EXISTS public.schedule_version (
     id integer NOT NULL,
     generate_at timestamp without time zone NOT NULL
 );
@@ -188,7 +188,7 @@ ALTER TABLE public.schedule_version OWNER TO postgres;
 -- Name: schedule_version_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.schedule_version_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.schedule_version_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -210,7 +210,7 @@ ALTER SEQUENCE public.schedule_version_id_seq OWNED BY public.schedule_version.i
 -- Name: school_t; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.school_t (
+CREATE TABLE IF NOT EXISTS public.school_t (
     id integer NOT NULL,
     name character varying(255) NOT NULL,
     max_lessons_day integer NOT NULL,
@@ -226,7 +226,7 @@ ALTER TABLE public.school_t OWNER TO postgres;
 -- Name: school_t_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.school_t_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.school_t_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -248,7 +248,7 @@ ALTER SEQUENCE public.school_t_id_seq OWNED BY public.school_t.id;
 -- Name: subject_t; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.subject_t (
+CREATE TABLE IF NOT EXISTS public.subject_t (
     id integer NOT NULL,
     name character varying(255) NOT NULL,
     school_t_id integer NOT NULL,
@@ -263,7 +263,7 @@ ALTER TABLE public.subject_t OWNER TO postgres;
 -- Name: subject_t_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.subject_t_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.subject_t_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -285,7 +285,7 @@ ALTER SEQUENCE public.subject_t_id_seq OWNED BY public.subject_t.id;
 -- Name: teacher_subject; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.teacher_subject (
+CREATE TABLE IF NOT EXISTS public.teacher_subject (
     id integer NOT NULL,
     teacher_t_id integer NOT NULL,
     subject_t_id integer NOT NULL
@@ -298,7 +298,7 @@ ALTER TABLE public.teacher_subject OWNER TO postgres;
 -- Name: teacher_subject_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.teacher_subject_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.teacher_subject_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -320,7 +320,7 @@ ALTER SEQUENCE public.teacher_subject_id_seq OWNED BY public.teacher_subject.id;
 -- Name: teacher_t; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.teacher_t (
+CREATE TABLE IF NOT EXISTS public.teacher_t (
     id integer NOT NULL,
     full_name character varying(255) NOT NULL,
     school_t_id integer NOT NULL,
@@ -335,7 +335,7 @@ ALTER TABLE public.teacher_t OWNER TO postgres;
 -- Name: teacher_t_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.teacher_t_id_seq
+CREATE SEQUENCE IF NOT EXISTS public.teacher_t_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -640,21 +640,21 @@ ALTER TABLE ONLY public.teacher_t
 -- Name: idx_schedule_class; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_schedule_class ON public.schedule USING btree (calss_id);
+CREATE INDEX IF NOT EXISTS idx_schedule_class ON public.schedule USING btree (calss_id);
 
 
 --
 -- Name: idx_schedule_teacher; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_schedule_teacher ON public.schedule USING btree (teacher_id);
+CREATE INDEX IF NOT EXISTS idx_schedule_teacher ON public.schedule USING btree (teacher_id);
 
 
 --
 -- Name: idx_schedule_version; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_schedule_version ON public.schedule USING btree (shedule_version_id);
+CREATE INDEX IF NOT EXISTS idx_schedule_version ON public.schedule USING btree (shedule_version_id);
 
 
 --
