@@ -24,7 +24,7 @@ namespace SchoolService.DTOs
     }
     public class EditSchoolMaxLessonsDay
     {
-        public int MaxLessosnsDay { get; set; }
+        public int MaxLessonsDay { get; set; }
         public int SchoolId { get; set; }
     }
 }

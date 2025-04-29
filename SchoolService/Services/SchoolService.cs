@@ -124,7 +124,7 @@ namespace SchoolService.Services
 
             var school = await _db.Schools.FirstOrDefaultAsync(s => s.Id == request.SchoolId && s.UserId == userId);
             if (school == null) return null;
-            school.MaxLessonsDay = request.MaxLessosnsDay;
+            school.MaxLessonsDay = request.MaxLessonsDay;
             school.CreateDateTime = DateTime.SpecifyKind(school.CreateDateTime, DateTimeKind.Utc);
             _db.Schools.Update(school);
             await _db.SaveChangesAsync();
