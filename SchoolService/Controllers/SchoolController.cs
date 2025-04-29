@@ -36,11 +36,11 @@ namespace SchoolService.Controllers
         }
 
         [HttpPut("edit_lessons_day")]
-        public async Task<IActionResult> EditSchoolMaxLessosnsDay([FromBody] EditSchoolMaxLessonsDay request)
+        public async Task<IActionResult> EditSchoolMaxLessonsDay([FromBody] EditSchoolMaxLessonsDay request)
         {
             var user = UserContextHelper.GetCurrentUser(HttpContext);
             if (user == null) return Unauthorized();
-            var school = await _service.EditSchoolMaxLessosnsDayAsync(request, user.Id);
+            var school = await _service.EditSchoolMaxLessonsDayAsync(request, user.Id);
             return Ok(school);
         }
 

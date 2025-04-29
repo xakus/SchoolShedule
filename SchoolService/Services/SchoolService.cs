@@ -117,7 +117,7 @@ namespace SchoolService.Services
             await _redis.StringSetAsync(key, JsonSerializer.Serialize(dto));
             return dto;
         }
-        public async Task<SchoolResponse?> EditSchoolMaxLessosnsDayAsync(EditSchoolMaxLessonsDay request, int userId)
+        public async Task<SchoolResponse?> EditSchoolMaxLessonsDayAsync(EditSchoolMaxLessonsDay request, int userId)
         {
             string key = $"school:{request.SchoolId}";
             await _redis.KeyDeleteAsync(key);
@@ -125,6 +125,7 @@ namespace SchoolService.Services
             var school = await _db.Schools.FirstOrDefaultAsync(s => s.Id == request.SchoolId && s.UserId == userId);
             if (school == null) return null;
             school.MaxLessonsDay = request.MaxLessosnsDay;
+            school.CreateDateTime = DateTime.SpecifyKind(school.CreateDateTime, DateTimeKind.Utc);
             _db.Schools.Update(school);
             await _db.SaveChangesAsync();
             var dto = new SchoolResponse
