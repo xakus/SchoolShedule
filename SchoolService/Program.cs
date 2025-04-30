@@ -12,11 +12,9 @@ builder.WebHost.UseUrls("http://*:5002", "https://*:5003");
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "SchoolService API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
+builder.Services.AddSwaggerGen(c => {
+    c.SwaggerDoc("v1", new() {Title = "SchoolService API", Version = "v1"});
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
         Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
         Name = "Authorization",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
@@ -32,7 +30,7 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            new string[] { }
         }
     });
 });
@@ -59,11 +57,10 @@ builder.Services.AddScoped<ClassService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 
