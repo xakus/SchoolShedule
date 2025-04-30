@@ -99,11 +99,11 @@ namespace SchoolService.Controllers
 
         // DELETE: class/delete_subject
         [HttpDelete("delete_subject")]
-        public async Task<IActionResult> DeleteSubject([FromQuery] int classLessosnId)
+        public async Task<IActionResult> DeleteSubject([FromQuery] int classLessonId)
         {
             var user = UserContextHelper.GetCurrentUser(HttpContext);
             if (user == null) return Unauthorized();
-            await _service.RemoveSubjectFromClassAsync(classLessosnId, user.Id);
+            await _service.RemoveSubjectFromClassAsync(classLessonId, user.Id);
             return Ok();
         }
 
