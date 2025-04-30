@@ -38,7 +38,7 @@ namespace SchoolService.Controllers
         }
 
         [HttpPut("edit_name")]
-        public async Task<IActionResult> EditName([FromQuery] EditSubjectNameRequest request)
+        public async Task<IActionResult> EditName([FromBody] EditSubjectNameRequest request)
         {
             var user = UserContextHelper.GetCurrentUser(HttpContext);
             if (user == null) return Unauthorized();
