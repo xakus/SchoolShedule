@@ -35,26 +35,6 @@ CREATE TABLE IF NOT EXISTS public."Users" (
 
 ALTER TABLE public."Users" OWNER TO postgres;
 
---
--- Name: Users_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public."Users_Id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public."Users_Id_seq" OWNER TO postgres;
-
---
--- Name: Users_Id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public."Users_Id_seq" OWNED BY public."Users"."Id";
 
 
 --
@@ -70,27 +50,6 @@ CREATE TABLE IF NOT EXISTS public.class_lessons (
 
 
 ALTER TABLE public.class_lessons OWNER TO postgres;
-
---
--- Name: class_lessonse_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public.class_lessonse_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.class_lessonse_id_seq OWNER TO postgres;
-
---
--- Name: class_lessonse_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.class_lessonse_id_seq OWNED BY public.class_lessons.id;
 
 
 --
@@ -108,27 +67,6 @@ CREATE TABLE IF NOT EXISTS public.class_t (
 
 
 ALTER TABLE public.class_t OWNER TO postgres;
-
---
--- Name: class_t_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public.class_t_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.class_t_id_seq OWNER TO postgres;
-
---
--- Name: class_t_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.class_t_id_seq OWNED BY public.class_t.id;
 
 
 --
@@ -150,27 +88,6 @@ CREATE TABLE IF NOT EXISTS public.schedule (
 
 ALTER TABLE public.schedule OWNER TO postgres;
 
---
--- Name: schedule_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public.schedule_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.schedule_id_seq OWNER TO postgres;
-
---
--- Name: schedule_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.schedule_id_seq OWNED BY public.schedule.id;
-
 
 --
 -- Name: schedule_version; Type: TABLE; Schema: public; Owner: postgres
@@ -184,26 +101,6 @@ CREATE TABLE IF NOT EXISTS public.schedule_version (
 
 ALTER TABLE public.schedule_version OWNER TO postgres;
 
---
--- Name: schedule_version_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public.schedule_version_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.schedule_version_id_seq OWNER TO postgres;
-
---
--- Name: schedule_version_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.schedule_version_id_seq OWNED BY public.schedule_version.id;
 
 
 --
@@ -222,27 +119,6 @@ CREATE TABLE IF NOT EXISTS public.school_t (
 
 ALTER TABLE public.school_t OWNER TO postgres;
 
---
--- Name: school_t_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public.school_t_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.school_t_id_seq OWNER TO postgres;
-
---
--- Name: school_t_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.school_t_id_seq OWNED BY public.school_t.id;
-
 
 --
 -- Name: subject_t; Type: TABLE; Schema: public; Owner: postgres
@@ -259,26 +135,6 @@ CREATE TABLE IF NOT EXISTS public.subject_t (
 
 ALTER TABLE public.subject_t OWNER TO postgres;
 
---
--- Name: subject_t_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public.subject_t_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.subject_t_id_seq OWNER TO postgres;
-
---
--- Name: subject_t_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.subject_t_id_seq OWNED BY public.subject_t.id;
 
 
 --
@@ -294,26 +150,6 @@ CREATE TABLE IF NOT EXISTS public.teacher_subject (
 
 ALTER TABLE public.teacher_subject OWNER TO postgres;
 
---
--- Name: teacher_subject_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public.teacher_subject_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.teacher_subject_id_seq OWNER TO postgres;
-
---
--- Name: teacher_subject_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.teacher_subject_id_seq OWNED BY public.teacher_subject.id;
 
 
 --
@@ -331,26 +167,6 @@ CREATE TABLE IF NOT EXISTS public.teacher_t (
 
 ALTER TABLE public.teacher_t OWNER TO postgres;
 
---
--- Name: teacher_t_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE IF NOT EXISTS public.teacher_t_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.teacher_t_id_seq OWNER TO postgres;
-
---
--- Name: teacher_t_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.teacher_t_id_seq OWNED BY public.teacher_t.id;
 
 
 --
@@ -414,146 +230,6 @@ ALTER TABLE ONLY public.teacher_subject ALTER COLUMN id SET DEFAULT nextval('pub
 --
 
 ALTER TABLE ONLY public.teacher_t ALTER COLUMN id SET DEFAULT nextval('public.teacher_t_id_seq'::regclass);
-
-
---
--- Data for Name: Users; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."Users" ("Id", "Email", "PasswordHash", "CreatedAt") FROM stdin;
-2	xx@xx.xx	D9qahmo3Wg5bJGDSIESPUQ==.MMxTag8ByEFVYQJeyOc3kZeOVJpQ4Gf//lDt9PPAw4w=	2025-04-20 20:28:31.313358
-1	xxx@xxx.xx	D9qahmo3Wg5bJGDSIESPUQ==.MMxTag8ByEFVYQJeyOc3kZeOVJpQ4Gf//lDt9PPAw4w=	2025-04-20 00:26:49.578354
-\.
-
-
---
--- Data for Name: class_lessons; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.class_lessons (id, class_t_id, subject_t_id, hours_per_week) FROM stdin;
-\.
-
-
---
--- Data for Name: class_t; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.class_t (id, name, school_t_id, active_day_week, active, create_date_time) FROM stdin;
-\.
-
-
---
--- Data for Name: schedule; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.schedule (id, calss_id, teacher_id, subject_id, day_of_week, lessons_number, start_time, end_time, shedule_version_id) FROM stdin;
-\.
-
-
---
--- Data for Name: schedule_version; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.schedule_version (id, generate_at) FROM stdin;
-\.
-
-
---
--- Data for Name: school_t; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.school_t (id, name, max_lessons_day, user_id, create_date_time, active) FROM stdin;
-3	Murug oba	5	1	2025-04-21 20:46:05.33278	t
-1	Lecet tam orta mekteb	5	2	2025-04-23 22:20:48.849913	t
-2	Xudat 2 nomreli tam orta mekteb	5	2	2025-04-23 22:21:35.601648	t
-\.
-
-
---
--- Data for Name: subject_t; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.subject_t (id, name, school_t_id, active, create_date_time) FROM stdin;
-\.
-
-
---
--- Data for Name: teacher_subject; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.teacher_subject (id, teacher_t_id, subject_t_id) FROM stdin;
-\.
-
-
---
--- Data for Name: teacher_t; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.teacher_t (id, full_name, school_t_id, active, create_date_time) FROM stdin;
-\.
-
-
---
--- Name: Users_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."Users_Id_seq"', 2, true);
-
-
---
--- Name: class_lessonse_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.class_lessonse_id_seq', 283, true);
-
-
---
--- Name: class_t_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.class_t_id_seq', 40, true);
-
-
---
--- Name: schedule_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.schedule_id_seq', 473, true);
-
-
---
--- Name: schedule_version_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.schedule_version_id_seq', 9, true);
-
-
---
--- Name: school_t_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.school_t_id_seq', 3, true);
-
-
---
--- Name: subject_t_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.subject_t_id_seq', 71, true);
-
-
---
--- Name: teacher_subject_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.teacher_subject_id_seq', 163, true);
-
-
---
--- Name: teacher_t_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.teacher_t_id_seq', 14, true);
 
 
 --
