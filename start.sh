@@ -2,19 +2,14 @@
 
 # === НАСТРОЙКИ ДЛЯ ЗАПОЛНЕНИЯ ===
 
-# Пользователь Linux (обычно $USER, но можно явно указать)
 LINUX_USER="$USER"
-
-
-# Имя контейнера Postgres (должно совпадать с docker-compose)
 CONTAINER_NAME="postgres"
 PGUSER="postgres"
 PGPASSWORD="DBPASSWORD"
 DBNAME="school_db"
-# Ветка для клонирования (обычно main или master)
 GIT_BRANCH="master"
 
-# === ДАЛЬШЕ КОД СКРИПТА ===
+# === КОД СКРИПТА ===
 
 set -e
 
@@ -47,20 +42,20 @@ if [ ! -f "$DOCKER_COMPOSE_FILE" ]; then
     exit 1
 fi
 
-# Запускаем или создаём контейнеры
 echo "Проверка состояния контейнеров docker-compose..."
 if docker ps | grep -q "$CONTAINER_NAME"; then
-    echo "Контейнер $CONTAINER_NAME запущен."
+    echo "Контейнер $CONTAINER_NAME уже запущен."
 else
     if docker ps -a | grep -q "$CONTAINER_NAME"; then
-        echo "Запускаем существующие контейнеры postgres и redis-stack..."
+        echo "Запускаем ранее созданные контейнеры..."
         docker start "$CONTAINER_NAME" "redis-stack"
     else
-        echo "Создаём и запускаем сервисы через docker-compose..."
+        echo "Создаём и запускаем контейнеры через docker-compose..."
         docker-compose up -d
     fi
 fi
 
+echo "Проверка наличия .NET SDK..."
 if ! command -v dotnet &> /dev/null; then
     echo "Устанавливаю .NET SDK..."
     wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -69,8 +64,7 @@ if ! command -v dotnet &> /dev/null; then
     sudo apt install -y dotnet-sdk-8.0
 fi
 
-# Останавливаем предыдущие .NET-сервисы
-echo "Останавливаем предыдущие .NET-сервисы..."
+echo "Останавливаю предыдущие .NET-сервисы..."
 pkill -f "dotnet run --configuration Release" || true
 
 for service in UserService SchoolService GenerationService; do
@@ -84,35 +78,38 @@ for service in UserService SchoolService GenerationService; do
     nohup dotnet run --configuration Release > "$service.log" 2>&1 &
 done
 
-# Добавляем автозапуск скрипта при перезагрузке
 if ! crontab -l | grep -Fq "@reboot $SCRIPT_DIR/start.sh"; then
     (crontab -l 2>/dev/null; echo "@reboot $SCRIPT_DIR/start.sh") | crontab -
-    echo "Добавлена задача @reboot для $SCRIPT_DIR/start.sh"
+    echo "Добавлена задача @reboot для автозапуска"
 fi
 
-# === ИНИЦИАЛИЗАЦИЯ БАЗЫ SCHOOL_DB В КОНТЕЙНЕРЕ DOCKER ===
-
-
+# === ПРОВЕРКА И ИНИЦИАЛИЗАЦИЯ БАЗЫ ДАННЫХ ===
 
 SQLFILE="$DOCKER_DIR/postgres_init/start.sql"
 
-# Проверить, запущен ли контейнер
 if docker ps | grep -q "$CONTAINER_NAME"; then
-  echo "PostgreSQL контейнер $CONTAINER_NAME запущен. Проверяем наличие базы данных $DBNAME..."
+  echo "PostgreSQL контейнер $CONTAINER_NAME активен. Проверяю базу $DBNAME..."
 
   DB_EXISTS=$(docker exec -e PGPASSWORD="$PGPASSWORD" $CONTAINER_NAME psql -U "$PGUSER" -tAc "SELECT 1 FROM pg_database WHERE datname='$DBNAME';")
   if [ "$DB_EXISTS" != "1" ]; then
-    echo "База данных $DBNAME не существует. Создаём..."
+    echo "База данных $DBNAME не существует. Создаю..."
     docker exec -e PGPASSWORD="$PGPASSWORD" $CONTAINER_NAME createdb -U "$PGUSER" "$DBNAME"
   else
     echo "База данных $DBNAME уже существует."
   fi
 
-  echo "Копируем скрипт start.sql в контейнер и выполняем..."
-  docker cp "$SQLFILE" $CONTAINER_NAME:/start.sql
-  docker exec -e PGPASSWORD="$PGPASSWORD" $CONTAINER_NAME psql -U "$PGUSER" -d "$DBNAME" -f /start.sql
+  echo "Проверка наличия таблицы Users..."
+  TABLE_EXISTS=$(docker exec -e PGPASSWORD="$PGPASSWORD" $CONTAINER_NAME psql -U "$PGUSER" -d "$DBNAME" -tAc "SELECT to_regclass('public.\"Users\"');")
+
+  if [ "$TABLE_EXISTS" = "public.Users" ]; then
+    echo "Таблица Users уже существует. start.sql запускаться не будет."
+  else
+    echo "Таблица Users не найдена. Выполняю start.sql..."
+    docker cp "$SQLFILE" $CONTAINER_NAME:/start.sql
+    docker exec -e PGPASSWORD="$PGPASSWORD" $CONTAINER_NAME psql -U "$PGUSER" -d "$DBNAME" -f /start.sql
+  fi
 else
-  echo "Контейнер PostgreSQL не запущен. Скрипт будет выполнен автоматически при первом запуске контейнера."
+  echo "Контейнер PostgreSQL не запущен. Не удалось проверить или инициализировать базу."
 fi
 
 echo "Все сервисы запущены!"
