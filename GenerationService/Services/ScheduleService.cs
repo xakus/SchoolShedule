@@ -81,7 +81,7 @@ namespace GenerationService.Services {
 
             // Заголовок таблицы
             string[] headers = ["День", "№", "Время", "Класс", "Предмет", "Учитель"];
-            double[] colWidths = [80, 30, 80, 40, 150, 150];
+            double[] colWidths = [80, 30, 80, 70, 120, 150];
             double x = 40;
             for (var i = 0; i < headers.Length; i++) {
                 gfx.DrawString(headers[i], boldFont, PdfSharpCore.Drawing.XBrushes.Black,
