@@ -15,46 +15,44 @@ namespace GenerationService.Services {
             _db = db;
         }
 
-        public async Task<List<Schedule>> GetScheduleByClass(int classId){
+        public  List<Schedule> GetScheduleByClass(int classId){
             // Сначала пробуем получить расписание из БД
-            var dbSchedules = await _db.Schedules.Where(s => s.ClassId == classId).ToListAsync();
+            var dbSchedules =  _db.Schedules.Where(s => s.ClassId == classId).ToList();
             if (dbSchedules.Count != 0)
                 return dbSchedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber).ToList();
             // Если в БД пусто — генерируем и сохраняем
-            var generated = await GenerateSchedule();
+            var generated =  GenerateSchedule().Result;
             if (generated.Count == 0) return [];
 
             _db.Schedules.AddRange(generated);
-            await _db.SaveChangesAsync();
+             _db.SaveChangesAsync();
             return generated.Where(s => s.ClassId == classId).OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber)
                 .ToList();
         }
 
-        public async Task<List<Schedule>> GetScheduleByTeacher(int teacherId){
-            var dbSchedules = await _db.Schedules.Where(s => s.TeacherId == teacherId).ToListAsync();
-            if (dbSchedules.Any())
+        public  List<Schedule> GetScheduleByTeacher(int teacherId){
+            var dbSchedules =  _db.Schedules.Where(s => s.TeacherId == teacherId).ToList();
+            if (dbSchedules.Count != 0)
                 return dbSchedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber).ToList();
-            var generated = await GenerateSchedule();
-            if (generated.Count == 0) return new List<Schedule>();
+            var generated =  GenerateSchedule().Result;
+            if (generated.Count == 0) return [];
 
             _db.Schedules.AddRange(generated);
-            await _db.SaveChangesAsync();
+             _db.SaveChangesAsync();
             return generated.Where(s => s.TeacherId == teacherId).OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber)
                 .ToList();
         }
 
         public async Task<byte[]> GetSchedulePdfByClass(int classId){
-            var schedule = await GetScheduleByClass(classId);
-            var classDict = await _db.Classes.ToDictionaryAsync(c => c.Id, c => c.Name);
-            var className = classDict.TryGetValue(classId, out var cname) ? cname : classId.ToString();
-            return await GeneratePdf(schedule, $"Расписание для класса {className}");
+            var schedule =  GetScheduleByClass(classId);
+            var classDb = _db.Classes.FirstOrDefault(c => c.Id == classId)!;
+            return await GeneratePdf(schedule, $"Расписание для класса {classDb.Name}");
         }
 
         public async Task<byte[]> GetSchedulePdfByTeacher(int teacherId){
-            var schedule = await GetScheduleByTeacher(teacherId);
-            var teacherDict = await _db.Teachers.ToDictionaryAsync(t => t.Id, t => t.FullName);
-            var teacherName = teacherDict.TryGetValue(teacherId, out var tName) ? tName : teacherId.ToString();
-            return await GeneratePdf(schedule, $"Расписание для учителя {teacherName}");
+            var schedule =  GetScheduleByTeacher(teacherId);
+            var teacher = _db.Teachers.FirstOrDefault(t => t.Id==teacherId)!;
+            return await GeneratePdf(schedule, $"Расписание для учителя {teacher.FullName}");
         }
 
         private async Task<byte[]> GeneratePdf(List<Schedule> schedule, string title){
@@ -67,8 +65,8 @@ namespace GenerationService.Services {
             var document = new PdfSharpCore.Pdf.PdfDocument();
             var page = document.AddPage();
             var gfx = PdfSharpCore.Drawing.XGraphics.FromPdfPage(page);
-            var font = new PdfSharpCore.Drawing.XFont("Bahnschrift", 10);
-            var boldFont = new PdfSharpCore.Drawing.XFont("Bahnschrift", 12, PdfSharpCore.Drawing.XFontStyle.Bold);
+            var font = new PdfSharpCore.Drawing.XFont("Arial", 10);
+            var boldFont = new PdfSharpCore.Drawing.XFont("Spendthrift", 12, PdfSharpCore.Drawing.XFontStyle.Bold);
 
             double y = 40;
             gfx.DrawString(title, boldFont, PdfSharpCore.Drawing.XBrushes.Black,
@@ -260,9 +258,6 @@ namespace GenerationService.Services {
             // Сохранять расписание в БД по необходимости
             return schedules;
         }
-
-        Task<List<Schedule>> IScheduleService.GetScheduleByClass(int classId){
-            throw new NotImplementedException();
-        }
+        
     }
 }
