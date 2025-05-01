@@ -17,39 +17,39 @@ namespace GenerationService.Controllers
         }
 
         [HttpGet("class/{classId}")]
-        public IActionResult GetScheduleByClass(int classId)
+        public async Task<IActionResult> GetScheduleByClass(int classId)
         {
-            var schedule = _scheduleService.GetScheduleByClass(classId);
+            var schedule = await _scheduleService.GetScheduleByClass(classId);
             return Ok(schedule);
         }
 
         [HttpGet("teacher/{teacherId}")]
-        public IActionResult GetScheduleByTeacher(int teacherId)
+        public async Task<IActionResult> GetScheduleByTeacher(int teacherId)
         {
-            var schedule = _scheduleService.GetScheduleByTeacher(teacherId);
+            var schedule = await _scheduleService.GetScheduleByTeacher(teacherId);
             return Ok(schedule);
         }
 
         [HttpGet("class/{classId}/pdf")]
-        public IActionResult GetSchedulePdfByClass(int classId)
+        public async Task<IActionResult> GetSchedulePdfByClass(int classId)
         {
-            var pdf = _scheduleService.GetSchedulePdfByClass(classId);
+            var pdf = await _scheduleService.GetSchedulePdfByClass(classId);
             return File(pdf, "application/pdf", $"schedule_class_{classId}.pdf");
         }
 
         [HttpGet("teacher/{teacherId}/pdf")]
-        public IActionResult GetSchedulePdfByTeacher(int teacherId)
+        public async Task<IActionResult> GetSchedulePdfByTeacher(int teacherId)
         {
-            var pdf = _scheduleService.GetSchedulePdfByTeacher(teacherId);
+            var pdf = await _scheduleService.GetSchedulePdfByTeacher(teacherId);
             return File(pdf, "application/pdf", $"schedule_teacher_{teacherId}.pdf");
         }
 
         [HttpPost("generate")]
-        public IActionResult GenerateSchedule()
+        public async Task<IActionResult> GenerateSchedule()
         {
             try
             {
-                var schedule = _scheduleService.GenerateSchedule();
+                var schedule = await _scheduleService.GenerateSchedule();
                 if (schedule == null || !schedule.Any())
                     return NotFound("Нет данных для генерации расписания.");
                 return Ok(schedule);
@@ -61,11 +61,11 @@ namespace GenerationService.Controllers
         }
 
         [HttpPost("regenerate")]
-        public IActionResult RegenerateSchedule()
+        public async Task<IActionResult> RegenerateSchedule()
         {
             try
             {
-                var schedule = _scheduleService.RegenerateSchedule();
+                var schedule = await _scheduleService.RegenerateSchedule();
                 if (schedule == null || !schedule.Any())
                     return NotFound("Нет данных для генерации расписания.");
                 return Ok(schedule);

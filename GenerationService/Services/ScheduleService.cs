@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using GenerationService.Models;
 using GenerationService.Data;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace GenerationService.Services {
@@ -22,50 +18,50 @@ namespace GenerationService.Services {
         public async Task<List<Schedule>> GetScheduleByClass(int classId){
             // Сначала пробуем получить расписание из БД
             var dbSchedules = await _db.Schedules.Where(s => s.ClassId == classId).ToListAsync();
-            if (dbSchedules.Any())
+            if (dbSchedules.Count != 0)
                 return dbSchedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber).ToList();
             // Если в БД пусто — генерируем и сохраняем
-            var generated = GenerateSchedule();
+            var generated = await GenerateSchedule();
             if (generated.Count == 0) return [];
 
             _db.Schedules.AddRange(generated);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return generated.Where(s => s.ClassId == classId).OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber)
                 .ToList();
         }
 
-        public List<Schedule> GetScheduleByTeacher(int teacherId){
-            var dbSchedules = _db.Schedules.Where(s => s.TeacherId == teacherId).ToList();
+        public async Task<List<Schedule>> GetScheduleByTeacher(int teacherId){
+            var dbSchedules = await _db.Schedules.Where(s => s.TeacherId == teacherId).ToListAsync();
             if (dbSchedules.Any())
                 return dbSchedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber).ToList();
-            var generated = GenerateSchedule();
-            if (generated.Count == 0) return [];
+            var generated = await GenerateSchedule();
+            if (generated.Count == 0) return new List<Schedule>();
 
             _db.Schedules.AddRange(generated);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return generated.Where(s => s.TeacherId == teacherId).OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber)
                 .ToList();
         }
 
-        public byte[] GetSchedulePdfByClass(int classId){
-            var schedule = GetScheduleByClass(classId);
-            var classDict = _db.Classes.ToDictionary(c => c.Id, c => c.Name);
+        public async Task<byte[]> GetSchedulePdfByClass(int classId){
+            var schedule = await GetScheduleByClass(classId);
+            var classDict = await _db.Classes.ToDictionaryAsync(c => c.Id, c => c.Name);
             var className = classDict.TryGetValue(classId, out var cname) ? cname : classId.ToString();
-            return GeneratePdf(schedule.Result, $"Расписание для класса {className}");
+            return await GeneratePdf(schedule, $"Расписание для класса {className}");
         }
 
-        public byte[] GetSchedulePdfByTeacher(int teacherId){
-            var schedule = GetScheduleByTeacher(teacherId);
-            var teacherDict = _db.Teachers.ToDictionary(t => t.Id, t => t.FullName);
+        public async Task<byte[]> GetSchedulePdfByTeacher(int teacherId){
+            var schedule = await GetScheduleByTeacher(teacherId);
+            var teacherDict = await _db.Teachers.ToDictionaryAsync(t => t.Id, t => t.FullName);
             var teacherName = teacherDict.TryGetValue(teacherId, out var tName) ? tName : teacherId.ToString();
-            return GeneratePdf(schedule, $"Расписание для учителя {teacherName}");
+            return await GeneratePdf(schedule, $"Расписание для учителя {teacherName}");
         }
 
-        private byte[] GeneratePdf(List<Schedule> schedule, string title){
+        private async Task<byte[]> GeneratePdf(List<Schedule> schedule, string title){
             // Получаем справочники для отображения имен
-            var subjectDict = _db.Subjects.ToDictionary(s => s.Id, s => s.Name);
-            var teacherDict = _db.Teachers.ToDictionary(t => t.Id, t => t.FullName);
-            var classDict = _db.Classes.ToDictionary(c => c.Id, c => c.Name);
+            var subjectDict = await _db.Subjects.ToDictionaryAsync(s => s.Id, s => s.Name);
+            var teacherDict = await _db.Teachers.ToDictionaryAsync(t => t.Id, t => t.FullName);
+            var classDict = await _db.Classes.ToDictionaryAsync(c => c.Id, c => c.Name);
 
             using var ms = new MemoryStream();
             var document = new PdfSharpCore.Pdf.PdfDocument();
@@ -137,16 +133,16 @@ namespace GenerationService.Services {
             return ms.ToArray();
         }
 
-        public List<Schedule> GenerateSchedule(){
+        public Task<List<Schedule>> GenerateSchedule(){
             // Если расписание уже есть в БД — не пересоздаём
             var version = _db.ScheduleVersions.OrderByDescending(v => v.Id).FirstOrDefault();
             if (_db.Schedules.Any() && version != null)
-                return _db.Schedules.Where(s => s.ScheduleVersionId == version.Id).ToList();
+                return Task.FromResult(_db.Schedules.Where(s => s.ScheduleVersionId == version.Id).ToList());
 
-            return GenerateScheduleWithVersion();
+            return Task.FromResult(GenerateScheduleWithVersion());
         }
 
-        public List<Schedule> RegenerateSchedule(){
+        public Task<List<Schedule>> RegenerateSchedule(){
             // Очистить старое расписание и создать новую версию
             var newVersion = new ScheduleVersion {GeneratedAt = DateTime.UtcNow};
             _db.ScheduleVersions.Add(newVersion);
@@ -155,7 +151,7 @@ namespace GenerationService.Services {
             var schedules = GenerateScheduleWithVersion(newVersion);
             _db.Schedules.AddRange(schedules);
             _db.SaveChanges();
-            return schedules;
+            return Task.FromResult(schedules);
         }
 
         private List<Schedule> GenerateScheduleWithVersion(ScheduleVersion? version = null){
@@ -186,8 +182,8 @@ namespace GenerationService.Services {
                         .ToList();
 
                     var random = new Random();
-                    var teacher = matchingTeachers.Count > 0 
-                        ? matchingTeachers[random.Next(matchingTeachers.Count)] 
+                    var teacher = matchingTeachers.Count > 0
+                        ? matchingTeachers[random.Next(matchingTeachers.Count)]
                         : null;
                     if (teacher != null) {
                         teacherByClassSubject[(cl.Id, lesson.SubjectId)] = teacher.TeacherId;
@@ -265,7 +261,7 @@ namespace GenerationService.Services {
             return schedules;
         }
 
-        List<Schedule> IScheduleService.GetScheduleByClass(int classId){
+        Task<List<Schedule>> IScheduleService.GetScheduleByClass(int classId){
             throw new NotImplementedException();
         }
     }

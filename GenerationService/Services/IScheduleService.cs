@@ -9,11 +9,11 @@ namespace GenerationService.Services
     /// </summary>
     public interface IScheduleService
     {
-        List<Schedule> GetScheduleByClass(int classId);
-        List<Schedule> GetScheduleByTeacher(int teacherId);
-        byte[] GetSchedulePdfByClass(int classId);
-        byte[] GetSchedulePdfByTeacher(int teacherId);
-        List<Schedule> GenerateSchedule(); // Генерация расписания с проверкой коллизий
-        List<Schedule> RegenerateSchedule(); // Перегенерация расписания
+        Task<List<Schedule>>GetScheduleByClass(int classId);
+        Task<List<Schedule>> GetScheduleByTeacher(int teacherId);
+        Task<byte[]> GetSchedulePdfByClass(int classId);
+        Task<byte[]> GetSchedulePdfByTeacher(int teacherId);
+        Task<List<Schedule>> GenerateSchedule(); // Генерация расписания с проверкой коллизий
+        Task<List<Schedule>>RegenerateSchedule(); // Перегенерация расписания
     }
 }
