@@ -71,8 +71,8 @@ namespace GenerationService.Services {
             var document = new PdfSharpCore.Pdf.PdfDocument();
             var page = document.AddPage();
             var gfx = PdfSharpCore.Drawing.XGraphics.FromPdfPage(page);
-            var font = new PdfSharpCore.Drawing.XFont("Arial", 10);
-            var boldFont = new PdfSharpCore.Drawing.XFont("Arial", 14, PdfSharpCore.Drawing.XFontStyle.Bold);
+            var font = new PdfSharpCore.Drawing.XFont("Bahnschrift", 10);
+            var boldFont = new PdfSharpCore.Drawing.XFont("Bahnschrift", 12, PdfSharpCore.Drawing.XFontStyle.Bold);
 
             double y = 40;
             gfx.DrawString(title, boldFont, PdfSharpCore.Drawing.XBrushes.Black,
