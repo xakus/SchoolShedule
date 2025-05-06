@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using GenerationService.Models;
-using GenerationService.Data;
 using GenerationService.Services;
 
 namespace GenerationService.Controllers
@@ -16,41 +14,41 @@ namespace GenerationService.Controllers
             _scheduleService = scheduleService;
         }
 
-        [HttpGet("class/{classId}")]
-        public Task<IActionResult> GetScheduleByClass([FromQuery] int classId)
+        [HttpGet("class")]
+        public Task<IActionResult> GetScheduleByClass([FromQuery] long schoolId, [FromQuery] int classId)
         {
-            var schedule =  _scheduleService.GetScheduleByClass(classId);
+            var schedule =  _scheduleService.GetScheduleByClass(schoolId,classId);
             return Task.FromResult<IActionResult>(Ok(schedule));
         }
 
-        [HttpGet("teacher/{teacherId}")]
-        public Task<IActionResult> GetScheduleByTeacher([FromQuery] int teacherId)
+        [HttpGet("teacher")]
+        public Task<IActionResult> GetScheduleByTeacher([FromQuery] long schoolId, [FromQuery] int teacherId)
         {
-            var schedule =  _scheduleService.GetScheduleByTeacher(teacherId);
+            var schedule =  _scheduleService.GetScheduleByTeacher(schoolId,teacherId);
             return Task.FromResult<IActionResult>(Ok(schedule));
         }
 
-        [HttpGet("class/{classId}/pdf")]
-        public async Task<IActionResult> GetSchedulePdfByClass([FromQuery] int classId)
+        [HttpGet("class/pdf")]
+        public Task<IActionResult> GetSchedulePdfByClass([FromQuery] long schoolId,[FromQuery] int classId)
         {
-            var pdf = await _scheduleService.GetSchedulePdfByClass(classId);
-            return File(pdf, "application/pdf", $"schedule_class_{classId}.pdf");
+            var pdf =  _scheduleService.GetSchedulePdfByClass(schoolId,classId).Result;
+            return Task.FromResult<IActionResult>(File(pdf, "application/pdf", $"schedule_class_{classId}.pdf"));
         }
 
-        [HttpGet("teacher/{teacherId}/pdf")]
-        public async Task<IActionResult> GetSchedulePdfByTeacher([FromQuery] int teacherId)
+        [HttpGet("teacher/pdf")]
+        public async Task<IActionResult> GetSchedulePdfByTeacher([FromQuery] long schoolId,[FromQuery]  int teacherId)
         {
-            var pdf = await _scheduleService.GetSchedulePdfByTeacher(teacherId);
+            var pdf = await _scheduleService.GetSchedulePdfByTeacher(schoolId,teacherId);
             return File(pdf, "application/pdf", $"schedule_teacher_{teacherId}.pdf");
         }
 
         [HttpPost("generate")]
-        public async Task<IActionResult> GenerateSchedule()
+        public async Task<IActionResult> GenerateSchedule([FromQuery] long schoolId)
         {
             try
             {
-                var schedule = await _scheduleService.GenerateSchedule();
-                if (schedule == null || !schedule.Any())
+                var schedule = await _scheduleService.GenerateScheduleResponse(schoolId);
+                if (schedule.Count == 0)
                     return NotFound("Нет данных для генерации расписания.");
                 return Ok(schedule);
             }
@@ -61,12 +59,12 @@ namespace GenerationService.Controllers
         }
 
         [HttpPost("regenerate")]
-        public async Task<IActionResult> RegenerateSchedule()
+        public async Task<IActionResult> RegenerateSchedule([FromQuery] long schoolId)
         {
             try
             {
-                var schedule = await _scheduleService.RegenerateSchedule();
-                if (schedule == null || !schedule.Any())
+                var schedule = await _scheduleService.RegenerateSchedule(schoolId);
+                if (schedule.Count == 0)
                     return NotFound("Нет данных для генерации расписания.");
                 return Ok(schedule);
             }

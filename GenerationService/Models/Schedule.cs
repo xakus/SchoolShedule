@@ -16,6 +16,8 @@ namespace GenerationService.Models
         public int Id { get; set; }
         [Column("calss_id")]
         public int ClassId { get; set; }
+        [Column("school_id")]
+        public long SchoolId { get; set; }
         [Column("teacher_id")]
         public int TeacherId { get; set; }
         [Column("subject_id")]

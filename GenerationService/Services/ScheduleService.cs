@@ -15,43 +15,43 @@ namespace GenerationService.Services {
             _db = db;
         }
 
-        public  List<Schedule> GetScheduleByClass(int classId){
+        public List<Schedule> GetScheduleByClass(long schoolId, int classId){
             // Сначала пробуем получить расписание из БД
-            var dbSchedules =  _db.Schedules.Where(s => s.ClassId == classId).ToList();
+            var dbSchedules = _db.Schedules.Where(s => s.ClassId == classId && s.SchoolId == schoolId).ToList();
             if (dbSchedules.Count != 0)
                 return dbSchedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber).ToList();
             // Если в БД пусто — генерируем и сохраняем
-            var generated =  GenerateSchedule().Result;
+            var generated = GenerateSchedule(schoolId).Result;
             if (generated.Count == 0) return [];
 
             _db.Schedules.AddRange(generated);
-             _db.SaveChangesAsync();
+            _db.SaveChangesAsync();
             return generated.Where(s => s.ClassId == classId).OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber)
                 .ToList();
         }
 
-        public  List<Schedule> GetScheduleByTeacher(int teacherId){
-            var dbSchedules =  _db.Schedules.Where(s => s.TeacherId == teacherId).ToList();
+        public List<Schedule> GetScheduleByTeacher(long schoolId, int teacherId){
+            var dbSchedules = _db.Schedules.Where(s => s.TeacherId == teacherId && s.SchoolId == schoolId).ToList();
             if (dbSchedules.Count != 0)
                 return dbSchedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber).ToList();
-            var generated =  GenerateSchedule().Result;
+            var generated = GenerateSchedule(schoolId).Result;
             if (generated.Count == 0) return [];
 
             _db.Schedules.AddRange(generated);
-             _db.SaveChangesAsync();
+            _db.SaveChangesAsync();
             return generated.Where(s => s.TeacherId == teacherId).OrderBy(s => s.DayOfWeek).ThenBy(s => s.LessonNumber)
                 .ToList();
         }
 
-        public async Task<byte[]> GetSchedulePdfByClass(int classId){
-            var schedule =  GetScheduleByClass(classId);
+        public async Task<byte[]> GetSchedulePdfByClass(long schoolId, int classId){
+            var schedule = GetScheduleByClass(schoolId, classId);
             var classDb = _db.Classes.FirstOrDefault(c => c.Id == classId)!;
-            return await GeneratePdf(schedule, $"Расписание для класса {classDb.Name}");
+            return await GeneratePdf(schedule, $"Расписание для \"{classDb.Name}\" класса");
         }
 
-        public async Task<byte[]> GetSchedulePdfByTeacher(int teacherId){
-            var schedule =  GetScheduleByTeacher(teacherId);
-            var teacher = _db.Teachers.FirstOrDefault(t => t.Id==teacherId)!;
+        public async Task<byte[]> GetSchedulePdfByTeacher(long schoolId, int teacherId){
+            var schedule = GetScheduleByTeacher(schoolId, teacherId);
+            var teacher = _db.Teachers.FirstOrDefault(t => t.Id == teacherId)!;
             return await GeneratePdf(schedule, $"Расписание для учителя {teacher.FullName}");
         }
 
@@ -106,7 +106,7 @@ namespace GenerationService.Services {
                     : item.TeacherId.ToString();
                 var className = classDict.TryGetValue(item.ClassId, out var cname) ? cname : item.ClassId.ToString();
                 string[] row = [
-                    item.DayOfWeek.ToString(),
+                    DayOfWeekRus(item.DayOfWeek),
                     item.LessonNumber.ToString(),
                     $@"{item.StartTime:hh\:mm}-{item.EndTime:hh\:mm}",
                     " " + className,
@@ -131,28 +131,69 @@ namespace GenerationService.Services {
             return ms.ToArray();
         }
 
-        public Task<List<Schedule>> GenerateSchedule(){
+        public Task<List<Schedule>> GenerateSchedule(long schoolId){
             // Если расписание уже есть в БД — не пересоздаём
             var version = _db.ScheduleVersions.OrderByDescending(v => v.Id).FirstOrDefault();
+            List<Schedule> schedules;
             if (_db.Schedules.Any() && version != null)
-                return Task.FromResult(_db.Schedules.Where(s => s.ScheduleVersionId == version.Id).ToList());
+                schedules = _db.Schedules.Where(s => s.ScheduleVersionId == version.Id).ToList();
+            else {
+                schedules = GenerateScheduleWithVersion(schoolId);
+            }
 
-            return Task.FromResult(GenerateScheduleWithVersion());
-        }
-
-        public Task<List<Schedule>> RegenerateSchedule(){
-            // Очистить старое расписание и создать новую версию
-            var newVersion = new ScheduleVersion {GeneratedAt = DateTime.UtcNow};
-            _db.ScheduleVersions.Add(newVersion);
-            _db.Schedules.RemoveRange(_db.Schedules);
-            _db.SaveChanges();
-            var schedules = GenerateScheduleWithVersion(newVersion);
-            _db.Schedules.AddRange(schedules);
-            _db.SaveChanges();
             return Task.FromResult(schedules);
         }
 
-        private List<Schedule> GenerateScheduleWithVersion(ScheduleVersion? version = null){
+        public Task<List<ScheduleResponse>> GenerateScheduleResponse(long schoolId){
+            // Если расписание уже есть в БД — не пересоздаём
+            var version = _db.ScheduleVersions.OrderByDescending(v => v.Id).FirstOrDefault();
+            List<Schedule> schedules;
+            if (_db.Schedules.Any() && version != null)
+                schedules = _db.Schedules.Where(s => s.ScheduleVersionId == version.Id).ToList();
+            else {
+                schedules = GenerateScheduleWithVersion(schoolId);
+            }
+
+            var teachers = _db.Teachers.Where(t => t.Active).ToDictionary(t => t.Id, t => t.FullName);
+            var classes = _db.Classes.Where(c => c.Active).ToDictionary(c => c.Id, c => c.Name);
+            var subjects = _db.Subjects.Where(s => s.Active).ToDictionary(s => s.Id, s => s.Name);
+            var scheduleResponse = schedules.Select(s => new ScheduleResponse {
+                Id = s.Id,
+                StartTime = s.StartTime,
+                EndTime = s.EndTime,
+                LessonsNumber = s.LessonNumber,
+                SubjectName = subjects.TryGetValue(s.SubjectId, out var subject) ? subject : string.Empty,
+                DayWeek = DayOfWeekRus(s.DayOfWeek),
+                TeacherName = teachers.TryGetValue(s.TeacherId, out var teacher) ? teacher : string.Empty,
+                ClassName = classes.TryGetValue(s.ClassId, out var className) ? className : string.Empty,
+            }).ToList();
+            return Task.FromResult(scheduleResponse);
+        }
+
+        public Task<List<ScheduleResponse>> RegenerateSchedule(long schoolId){
+            // Очистить старое расписание и создать новую версию
+            var newVersion = new ScheduleVersion {GeneratedAt = DateTime.UtcNow};
+            _db.ScheduleVersions.Add(newVersion);
+            _db.Schedules.RemoveRange(_db.Schedules.Where(s=>s.SchoolId == schoolId));
+            _db.SaveChanges();
+            var schedules = GenerateScheduleWithVersion(schoolId, newVersion);
+            var teachers = _db.Teachers.Where(t => t.Active).ToDictionary(t => t.Id, t => t.FullName);
+            var classes = _db.Classes.Where(c => c.Active).ToDictionary(c => c.Id, c => c.Name);
+            var subjects = _db.Subjects.Where(s => s.Active).ToDictionary(s => s.Id, s => s.Name);
+            var scheduleResponse = schedules.Select(s => new ScheduleResponse {
+                Id = s.Id,
+                StartTime = s.StartTime,
+                EndTime = s.EndTime,
+                LessonsNumber = s.LessonNumber,
+                SubjectName = subjects.TryGetValue(s.SubjectId, out var subject) ? subject : string.Empty,
+                DayWeek = DayOfWeekRus(s.DayOfWeek),
+                TeacherName = teachers.TryGetValue(s.TeacherId, out var teacher) ? teacher : string.Empty,
+                ClassName = classes.TryGetValue(s.ClassId, out var className) ? className : string.Empty,
+            }).ToList();
+            return  Task.FromResult(scheduleResponse);
+        }
+
+        private List<Schedule> GenerateScheduleWithVersion(long schoolId, ScheduleVersion? version = null){
             version ??= new ScheduleVersion {GeneratedAt = DateTime.UtcNow};
             if (version.Id == 0) {
                 _db.ScheduleVersions.Add(version);
@@ -163,15 +204,17 @@ namespace GenerationService.Services {
             var schedules = new List<Schedule>();
             var daysOfWeek = new[]
                 {DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday};
+            var school = _db.Schools.Where(s => s.Active).OrderBy(s => s.Id).FirstOrDefault(s => s.Id == schoolId);
+            var classes = _db.Classes.Where(c => c.Active && c.SchoolId == schoolId).ToList();
+            var classIds = classes.Select(c => c.Id).ToList();
+            var classLessons = _db.ClassLessons.Where(cl => classIds.Contains(cl.ClassId)).ToList();
+            var teachers = _db.Teachers.Where(t => t.Active && t.SchoolId == schoolId).ToList();
+            var teacherIds = teachers.Select(t => t.Id).ToList();
+            var teacherSubjects = _db.TeacherSubjects.Where(subject => teacherIds.Contains(subject.TeacherId)).ToList();
 
-            var classLessons = _db.ClassLessons.ToList();
-            var teacherSubjects = _db.TeacherSubjects.ToList();
-            var classes = _db.Classes.Where(c => c.Active).ToList();
-            var subjects = _db.Subjects.Where(s => s.Active).ToList();
-            var teachers = _db.Teachers.Where(t => t.Active).ToList();
 
             // Для каждого класса и предмета ищем закрепленного учителя
-            var teacherByClassSubject = new Dictionary<(int classId, int subjectId), int>();
+            var teacherByClassSubject = new Dictionary<(int classId, long subjectId), int>();
             foreach (var cl in classes) {
                 foreach (var lesson in classLessons.Where(l => l.ClassId == cl.Id)) {
                     // Найти учителя, который ведет этот предмет
@@ -190,14 +233,14 @@ namespace GenerationService.Services {
             }
 
             // Распределяем уроки по дням и номерам (без коллизии по времени)
-            int maxLessonsPerDay = 6;
+            var maxLessonsPerDay = school?.MaxLessonsDay ?? 0;
             var classScheduleMap = new Dictionary<(int classId, DayOfWeek day, int lessonNumber), bool>();
             var teacherScheduleMap = new Dictionary<(int teacherId, DayOfWeek day, int lessonNumber), bool>();
 
             foreach (var cl in classes) {
                 var lessons = classLessons.Where(l => l.ClassId == cl.Id).ToList();
                 var subjectHoursLeft = lessons.ToDictionary(l => l.SubjectId, l => l.HoursPerWeek);
-                var daySubjects = daysOfWeek.ToDictionary(d => d, d => new HashSet<int>());
+                var daySubjects = daysOfWeek.ToDictionary(d => d, _ => new HashSet<int>());
                 var totalLessons = lessons.Sum(l => l.HoursPerWeek);
                 var maxWeeklyLessons = Math.Min(35, totalLessons);
                 var placedLessons = 0;
@@ -230,16 +273,28 @@ namespace GenerationService.Services {
                             continue;
                         }
 
-                        schedules.Add(new Schedule {
+                        ///////////////////
+                        var startTime = TimeSpan.FromHours(8) + TimeSpan.FromMinutes(30);
+                        TimeSpan[] peremena = [
+                            TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(5),
+                            TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5),
+                            TimeSpan.FromMinutes(5)
+                        ];
+                        ///////////////////
+                        var schl = new Schedule {
+                            SchoolId = schoolId,
                             ClassId = cl.Id,
                             TeacherId = teacherId,
                             SubjectId = subjectId,
                             DayOfWeek = day,
                             LessonNumber = lessonNumber,
-                            StartTime = TimeSpan.FromHours(8 + lessonNumber - 1),
-                            EndTime = TimeSpan.FromHours(9 + lessonNumber - 1),
+                            StartTime = LessonT(startTime, lessonNumber, maxLessonsPerDay, peremena,
+                                LessonTime.StartTime),
+                            EndTime = LessonT(startTime, lessonNumber, maxLessonsPerDay, peremena, LessonTime.EndTime),
                             ScheduleVersionId = version.Id
-                        });
+                        };
+                        schedules.Add(schl);
+                        _db.Schedules.AddRange(schl);
                         classScheduleMap[(cl.Id, day, lessonNumber)] = true;
                         teacherScheduleMap[(teacherId, day, lessonNumber)] = true;
                         daySubjects[day].Add(subjectId);
@@ -255,9 +310,47 @@ namespace GenerationService.Services {
                 }
             }
 
+            _db.SaveChanges();
             // Сохранять расписание в БД по необходимости
             return schedules;
         }
-        
+
+        private static TimeSpan LessonT(TimeSpan startTime, int lessonNumber, int maxLessons, TimeSpan[] peremena,
+            LessonTime p2){
+            var startSpans = new TimeSpan[maxLessons];
+            var endSpans = new TimeSpan[maxLessons];
+            for (var i = 0; i < maxLessons; i++) {
+                if (i == 0) startSpans[i] = startTime;
+                else
+                    startSpans[i] = endSpans[i - 1] + (peremena == null || peremena.Length - 1 < i
+                        ? TimeSpan.FromMinutes(5)
+                        : peremena[i - 1]);
+                endSpans[i] = startSpans[i] + TimeSpan.FromMinutes(45);
+            }
+
+            return p2 switch {
+                LessonTime.StartTime => startSpans[lessonNumber - 1],
+                LessonTime.EndTime => endSpans[lessonNumber - 1],
+                _ => TimeSpan.Zero
+            };
+        }
+
+        private enum LessonTime {
+            StartTime,
+            EndTime,
+        }
+
+        private string DayOfWeekRus(DayOfWeek dayOfWeek){
+            return dayOfWeek switch {
+                DayOfWeek.Sunday => "Воскресенье",
+                DayOfWeek.Monday => "Понедельник",
+                DayOfWeek.Tuesday => "Вторник",
+                DayOfWeek.Wednesday => "Среда",
+                DayOfWeek.Thursday => "Четверг",
+                DayOfWeek.Friday => "Пятница",
+                DayOfWeek.Saturday => "Суббота",
+                _ => ""
+            };
+        }
     }
 }

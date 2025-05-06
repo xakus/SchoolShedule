@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GenerationService.Models;
+using SchoolService.Models;
 
 namespace GenerationService.Data
 {
@@ -9,6 +10,7 @@ namespace GenerationService.Data
 
         public DbSet<Class> Classes => Set<Class>();
         public DbSet<Teacher> Teachers => Set<Teacher>();
+        public DbSet<School> Schools => Set<School>();
         public DbSet<Subject> Subjects => Set<Subject>();
         public DbSet<ClassLessonse> ClassLessons => Set<ClassLessonse>();
         public DbSet<TeacherSubject> TeacherSubjects => Set<TeacherSubject>();
